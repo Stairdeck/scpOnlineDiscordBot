@@ -4,7 +4,7 @@ online of your servers in status bar.
 
 The latest release can be found here: [Release link](https://github.com/Stairdeck/scpOnlineDiscordBot/releases/latest)
 
-![example_bots](https://stairdeck.com/bots.png)
+![example_bots](https://stairdeck.com/bots_en.png)
 
 ## Installation
 Just place all files in any directory, edit config.json and run.
