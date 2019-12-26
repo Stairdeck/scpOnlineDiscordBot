@@ -1,0 +1,20 @@
+{
+  "updateTime": 15,
+  "logger": true,
+  "servers": [
+    {
+      "name": "Server1",
+      "ip": "255.255.255.255",
+      "port": 7777,
+      "serverId": 25655,
+      "discordUserBotToken": "TokenForBot1"
+    },
+    {
+      "name": "Server2",
+      "ip": "255.255.255.255",
+      "port": 7778,
+      "serverId": 25613,
+      "discordUserBotToken": "TokenForBot2"
+    }
+  ]
+}
