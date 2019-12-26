@@ -1,5 +1,5 @@
 # scpOnlineDiscordBot
-scpDiscordBot is a application that allow you to create Discord bots, which displaying current
+scpOnlineDiscordBot is a application that allow you to create Discord bots, which displaying current
 online of your servers in status bar. 
 
 The latest release can be found here: [Release link](https://github.com/Stairdeck/scpOnlineDiscordBot/releases/latest)
