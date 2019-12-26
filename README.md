@@ -11,7 +11,7 @@ Just place all files in any directory, edit config.json and run.
 
 Release has two versions built: for linux and windows.
 
-But you can download sources and compilation for system you need.
+But you can download sources and make a compilation for the system you need.
 
 ## Configuration
 Example config.json
