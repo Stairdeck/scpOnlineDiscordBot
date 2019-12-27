@@ -99,9 +99,8 @@ func initServerInfo() {
 		}
 
 		data := body
-
-		defer file.Close()
 		_, err = file.Write(data)
+		file.Close()
 
 		if err != nil {
 			log.Fatalln(err)
@@ -120,6 +119,14 @@ func getServerInfo() []ServerInfo {
 	if err != nil {
 		fmt.Println("Error while reading cache: " + err.Error())
 		return nil
+	}
+
+	if len(data) == 0 {
+		if *config.Logger {
+			log.Println("Empty cache. Maybe info isn't updated yet? Trying again in 1 sec")
+		}
+		time.Sleep(time.Second * 1)
+		return getServerInfo()
 	}
 
 	var serverInfo []ServerInfo
@@ -158,6 +165,7 @@ func initBots(info ServerConfigInfo) {
 	}
 
 	client.Ready(func() {
+		log.Println("Successfully connected to " + *info.Name + "!")
 		go setStatus(*client, info)
 	})
 }
@@ -236,7 +244,8 @@ func setStatus(client disgord.Client, info ServerConfigInfo) {
 		err := client.UpdateStatus(&status)
 
 		if err != nil {
-			log.Println(err)
+			log.Println("Fail when updating bot status of " + *info.Name + "")
+			log.Println("Trying again in " + string(*config.UpdateTime) + " sec")
 		}
 		time.Sleep(time.Second * time.Duration(*config.UpdateTime))
 	}
