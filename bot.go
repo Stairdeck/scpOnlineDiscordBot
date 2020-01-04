@@ -88,8 +88,6 @@ func initServerInfo() {
 			continue
 		}
 
-		defer resp.Body.Close()
-
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Println("Failed when getting data from server:" + err.Error())
@@ -97,6 +95,8 @@ func initServerInfo() {
 			time.Sleep(time.Second * 10)
 			continue
 		}
+
+		resp.Body.Close()
 
 		data := body
 		_, err = file.Write(data)
@@ -122,11 +122,7 @@ func getServerInfo() []ServerInfo {
 	}
 
 	if len(data) == 0 {
-		if *config.Logger {
-			log.Println("Empty cache. Maybe info isn't updated yet? Trying again in 1 sec")
-		}
-		time.Sleep(time.Second * 1)
-		return getServerInfo()
+		return nil
 	}
 
 	var serverInfo []ServerInfo
@@ -181,8 +177,10 @@ func setStatus(client disgord.Client, info ServerConfigInfo) {
 		var serverArray = getServerInfo()
 
 		if serverArray == nil {
-			log.Println("Try again in 10 sec")
-			time.Sleep(time.Second * 10)
+			if *config.Logger {
+				log.Println("Empty cache. Maybe info isn't updated yet? Trying again in 1 sec")
+			}
+			time.Sleep(time.Second * 1)
 			continue
 		}
 
