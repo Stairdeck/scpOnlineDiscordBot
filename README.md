@@ -43,7 +43,7 @@ You need to fill the serverId or ip and port for any server!
 | Option | Type | Description |
 | ------ | ------ | ------ |
 | updateTime | int | Time in seconds after information is updated. Recommended > 15 |
-| updateTime | bool | Additional log information in console |
+| logger | bool | Additional log information in console |
 | servers | array | Servers array with detail information of server |
 | name | string | Name of your server, it is for logging |
 | ip | string | IP of your server |
