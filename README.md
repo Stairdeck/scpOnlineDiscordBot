@@ -17,37 +17,33 @@ But you can download sources and make a compilation for the system you need.
 Example config.json
 ```json
 {
-  "updateTime": 15,
   "logger": true,
+  "accountId": 1234,
+  "apiKey": "XXXXXXXX",
   "servers": [
     {
       "name": "Server1",
-      "ip": "255.255.255.255",
-      "port": 7777,
-      "serverId": 25655,
-      "discordUserBotToken": "TokenForBot1"
+      "serverId": 1234,
+      "discordUserBotToken": "XXXXXXXXXXXXX"
     },
     {
       "name": "Server2",
-      "ip": "255.255.255.255",
-      "port": 7778,
-      "serverId": 25613,
-      "discordUserBotToken": "TokenForBot2"
+      "serverId": 1234,
+      "discordUserBotToken": "XXXXXXXXXXXX"
     }
   ]
 }
 ```
 
-You need to fill the serverId or ip and port for any server!
+You need to fill the serverId for any server!
 
 | Option | Type | Description |
 | ------ | ------ | ------ |
-| updateTime | int | Time in seconds after information is updated. Recommended > 15 |
 | logger | bool | Additional log information in console |
+| accountId | int | Your account id. You can find it here [ServerList](https://servers.scpslgame.com/) (Click on your server to expand)
+| apiKey | string | Your api key. Type `!api` in your scp:sl server console |
 | servers | array | Servers array with detail information of server |
 | name | string | Name of your server, it is for logging |
-| ip | string | IP of your server |
-| port | int | Port of your server |
 | serverId | int | ID of your server in [SCP:SL ServerList](https://api.scpslgame.com/lobbylist.php?format=json) |
 | discordUserBotToken | string | Bot's token |
 

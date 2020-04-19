@@ -10,44 +10,34 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
 
+type Response struct {
+	Success  *bool        `json:"Success"`
+	Error    *string      `json:"Error"`
+	Cooldown *int         `json:"Cooldown"`
+	Servers  []ServerInfo `json:"Servers"`
+}
+
 type ServerInfo struct {
-	ServerId *int `json:"serverId"`
-	//AccountId    int     `json:"accountId"`
-	Ip      *string `json:"ip"`
-	Port    *int    `json:"port"`
-	Players *string `json:"players"`
-	/* Info         string  `json:"info"`
-	Pastebin     string  `json:"pastebin"`
-	Version      string  `json:"version"`
-	PrivateBeta  bool    `json:"privateBeta"`
-	FriendlyFire bool    `json:"friendlyFire"`
-	Modded       bool    `json:"modded"`
-	Whitelist    bool    `json:"whitelist"`
-	IsoCode      string  `json:"isoCode"`
-	CountryCode  string  `json:"countryCode"`
-	Latitude     float32 `json:"latitude"`
-	Longitude    float32 `json:"longitude"`
-	Official     string  `json:"official"`
-	OfficialCode int     `json:"officialCode"`
-	DisplaySection int     `json:"displaySection"` */
+	ID      *int    `json:"ID"`
+	Players *string `json:"Players"`
 }
 
 type ServerConfigInfo struct {
 	Name     *string `json:"name"`
-	Ip       *string `json:"ip"`
-	Port     *int    `json:"port"`
 	ServerId *int    `json:"serverId"`
 	BotToken *string `json:"discordUserBotToken"`
 }
 
 type ConfigFile struct {
-	UpdateTime *int               `json:"updateTime"`
-	Logger     *bool              `json:"logger"`
-	Servers    []ServerConfigInfo `json:"servers"`
+	Logger    *bool              `json:"logger"`
+	AccountId *int               `json:"accountId"`
+	ApiKey    *string            `json:"apiKey"`
+	Servers   []ServerConfigInfo `json:"servers"`
 }
 
 var config ConfigFile
@@ -80,7 +70,7 @@ func initServerInfo() {
 			return
 		}
 
-		resp, err := http.Get("https://api.scpslgame.com/lobbylist.php?format=json")
+		resp, err := http.Get("https://api.scpslgame.com/serverinfo.php?key=" + *config.ApiKey + "&id=" + strconv.Itoa(*config.AccountId) + "&players=true")
 		if err != nil {
 			log.Println("Failed when getting data from server:" + err.Error())
 			log.Println("Try again in 10 sec")
@@ -99,6 +89,24 @@ func initServerInfo() {
 		resp.Body.Close()
 
 		data := body
+
+		var response Response
+
+		err = json.Unmarshal(data, &response)
+		if err != nil {
+			log.Println("Error while parsing response: " + err.Error())
+			log.Println("Try again in 15 sec")
+			time.Sleep(time.Second * 15)
+			continue
+		}
+
+		if !*response.Success {
+			log.Println("Error while getting response: " + *response.Error)
+			log.Println("Try again in 15 sec")
+			time.Sleep(time.Second * 15)
+			continue
+		}
+
 		_, err = file.Write(data)
 		file.Close()
 
@@ -110,7 +118,7 @@ func initServerInfo() {
 			log.Println("Successfully getting data from server")
 		}
 
-		time.Sleep(time.Second * time.Duration(*config.UpdateTime))
+		time.Sleep(time.Second * time.Duration(*response.Cooldown+1))
 	}
 }
 
@@ -125,15 +133,15 @@ func getServerInfo() []ServerInfo {
 		return nil
 	}
 
-	var serverInfo []ServerInfo
+	var response Response
 
-	err = json.Unmarshal(data, &serverInfo)
+	err = json.Unmarshal(data, &response)
 	if err != nil {
 		log.Println("Error while parsing cache: " + err.Error())
 		return nil
 	}
 
-	return serverInfo
+	return response.Servers
 }
 
 func initBots(info ServerConfigInfo) {
@@ -185,20 +193,17 @@ func setStatus(client disgord.Client, info ServerConfigInfo) {
 		}
 
 		for _, element := range serverArray {
-			if info.ServerId == nil {
-				if *element.Ip == *info.Ip && *element.Port == *info.Port {
+			if *info.ServerId == *element.ID {
+				if element.Players != nil {
 					players = *element.Players
 					if *config.Logger {
 						log.Println(*info.Name + " found and online " + players)
+
 					}
 					break
+				} else {
+					players = ""
 				}
-			} else if *info.ServerId == *element.ServerId {
-				players = *element.Players
-				if *config.Logger {
-					log.Println(*info.Name + " found and online " + players)
-				}
-				break
 			}
 		}
 
@@ -227,7 +232,7 @@ func setStatus(client disgord.Client, info ServerConfigInfo) {
 			}
 		} else {
 			activity = disgord.Activity{
-				Name: "server startup",
+				Name: "offline",
 				Type: 3,
 			}
 			botStatus = disgord.StatusDnd
@@ -243,9 +248,9 @@ func setStatus(client disgord.Client, info ServerConfigInfo) {
 
 		if err != nil {
 			log.Println("Fail when updating bot status of " + *info.Name + "")
-			log.Println("Trying again in " + string(*config.UpdateTime) + " sec")
+			log.Println("Trying again in 15 sec")
 		}
-		time.Sleep(time.Second * time.Duration(*config.UpdateTime))
+		time.Sleep(time.Second * time.Duration(15))
 	}
 }
 
@@ -263,12 +268,6 @@ func initConfig() []ServerConfigInfo {
 		return nil
 	}
 
-	if config.UpdateTime == nil {
-		log.Println("You need to set update time in config.json")
-
-		return nil
-	}
-
 	if config.Logger == nil {
 		log.Println("You need to set logger to true/false in config.json")
 
@@ -283,11 +282,8 @@ func initConfig() []ServerConfigInfo {
 		}
 
 		if info.ServerId == nil {
-			if (info.Ip == nil || info.Port == nil) || (*info.Ip == "") {
-				log.Println("You need to set server id or ip and port for " + *info.Name + " in config.json")
-
-				return nil
-			}
+			log.Println("You need to set server id for " + *info.Name + " in config.json")
+			return nil
 		}
 
 		if info.BotToken == nil || *info.BotToken == "" {
