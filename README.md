@@ -1,3 +1,6 @@
+# This software is DEPRECATED
+Get better version here [DiscordMBM](https://github.com/Stairdeck/discordMBM)
+
 # scpOnlineDiscordBot
 scpOnlineDiscordBot is a application that allow you to create Discord bots, which displaying current
 online of your servers in status bar. 
